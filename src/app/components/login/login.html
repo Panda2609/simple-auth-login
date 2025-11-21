@@ -1,1 +1,74 @@
-<p>login works!</p>
+<div class="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-xl p-8 w-full max-w-md border-2 border-green-200">
+    <!-- Título -->
+    <h1 class="text-3xl font-bold text-green-700 text-center mb-6">Iniciar Sesión</h1>
+    
+    <!-- Formulario -->
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-5">
+      <!-- Email -->
+      <div>
+        <label for="email" class="block text-sm font-semibold text-green-800 mb-2">
+          Correo Electrónico
+        </label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          placeholder="Ej: email@email.com"
+          class="w-full px-4 py-2 border-2 border-green-200 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition"
+          [ngClass]="{
+            'border-red-500 bg-red-50': submitted && f['email'].errors
+          }"
+        />
+        <!-- Errores Email -->
+        <div *ngIf="submitted && f['email'].errors" class="mt-2 text-sm text-red-600">
+          <span *ngIf="f['email'].errors['required']">El email es requerido</span>
+          <span *ngIf="f['email'].errors['email']">Email inválido</span>
+        </div>
+      </div>
+
+      <!-- Contraseña -->
+      <div>
+        <label for="password" class="block text-sm font-semibold text-green-800 mb-2">
+          Contraseña
+        </label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          placeholder="Mínimo 6 caracteres"
+          class="w-full px-4 py-2 border-2 border-green-200 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition"
+          [ngClass]="{
+            'border-red-500 bg-red-50': submitted && f['password'].errors
+          }"
+        />
+        <!-- Errores Password -->
+        <div *ngIf="submitted && f['password'].errors" class="mt-2 text-sm text-red-600">
+          <span *ngIf="f['password'].errors['required']">La contraseña es requerida</span>
+          <span *ngIf="f['password'].errors['minlength']">Mínimo 6 caracteres</span>
+        </div>
+      </div>
+
+      <!-- Botón Submit -->
+      <button
+        type="submit"
+        class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-2 rounded-lg transition transform hover:scale-105 active:scale-100"
+      >
+        Ingresar
+      </button>
+    </form>
+
+    <!-- Link a Registro -->
+    <div class="mt-6 text-center border-t border-green-200 pt-4">
+      <p class="text-gray-600">
+        ¿No tienes cuenta?
+        <a
+          (click)="goToRegister()"
+          class="text-green-600 font-semibold hover:text-green-700 cursor-pointer hover:underline"
+        >
+          Regístrate aquí
+        </a>
+      </p>
+    </div>
+  </div>
+</div>
