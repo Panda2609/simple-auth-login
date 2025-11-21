@@ -3,24 +3,36 @@
     
     <!-- Header con Logout -->
     <div class="flex justify-between items-center mb-8 pb-6 border-b-2 border-green-200">
-      <h1 class="text-3xl font-bold text-green-700">🐼 ¡Bienvenido!</h1>
+      <div class="flex items-center gap-3">
+        <i class="fas fa-face-smile text-green-700 text-3xl"></i>
+        <h1 class="text-3xl font-bold text-green-700">¡Bienvenido!</h1>
+      </div>
       <button
         (click)="logout()"
-        class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-6 rounded-lg transition transform hover:scale-105 active:scale-100"
+        class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-6 rounded-lg transition transform hover:scale-105 active:scale-100 flex items-center gap-2"
       >
+        <i class="fas fa-sign-out-alt"></i>
         Cerrar Sesión
       </button>
     </div>
 
     <!-- Mensaje de éxito -->
     <div class="bg-green-50 border-l-4 border-green-500 p-6 mb-8 rounded-lg">
-      <p class="text-green-800 font-semibold text-lg">✨ ¡Felicidades! Te has logueado con éxito</p>
-      <p class="text-green-700 text-sm mt-2">Aquí puedes ver tus credenciales y token de autenticación</p>
+      <div class="flex items-start gap-3">
+        <i class="fas fa-check-circle text-green-600 text-xl mt-1"></i>
+        <div>
+          <p class="text-green-800 font-semibold text-lg">¡Felicidades! Te has logueado con éxito</p>
+          <p class="text-green-700 text-sm mt-2">Aquí puedes ver tus credenciales y token de autenticación</p>
+        </div>
+      </div>
     </div>
 
     <!-- Credenciales -->
     <div class="space-y-4 mb-8">
-      <h2 class="text-xl font-bold text-green-700 mb-4">📋 Tus Credenciales</h2>
+      <div class="flex items-center gap-2 mb-4">
+        <i class="fas fa-clipboard text-green-700 text-xl"></i>
+        <h2 class="text-xl font-bold text-green-700">Tus Credenciales</h2>
+      </div>
       
       <!-- Nombre -->
       <div class="bg-gray-50 p-4 rounded-lg border-2 border-green-200">
@@ -43,24 +55,31 @@
 
     <!-- Token -->
     <div class="space-y-2 mb-8">
-      <h2 class="text-xl font-bold text-green-700 mb-4">🔐 Token de Autenticación</h2>
+      <div class="flex items-center gap-2 mb-4">
+        <i class="fas fa-shield text-green-700 text-xl"></i>
+        <h2 class="text-xl font-bold text-green-700">Token de Autenticación</h2>
+      </div>
       
-      <div class="bg-gray-900 p-4 rounded-lg border-2 border-green-500 flex items-center justify-between">
+      <div class="bg-gray-900 p-4 rounded-lg border-2 border-green-500 flex items-center justify-between gap-4">
         <p class="text-green-400 font-mono text-sm break-all">{{ token }}</p>
         <button
           (click)="copyToClipboard(token)"
-          class="ml-4 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded text-sm font-semibold whitespace-nowrap transition transform hover:scale-105 active:scale-100"
+          class="ml-4 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded text-sm font-semibold whitespace-nowrap transition transform hover:scale-105 active:scale-100 flex items-center gap-2"
         >
+          <i class="fas fa-copy"></i>
           Copiar
         </button>
       </div>
     </div>
 
     <!-- Info adicional -->
-    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg text-center">
-      <p class="text-blue-800 text-sm">
-        💡 Este token es necesario para autenticarte en las peticiones al servidor
-      </p>
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
+      <div class="flex items-start gap-3">
+        <i class="fas fa-info-circle text-blue-600 text-xl mt-0.5"></i>
+        <p class="text-blue-800 text-sm">
+          Este token es necesario para autenticarte en las peticiones al servidor
+        </p>
+      </div>
     </div>
   </div>
 </div>
