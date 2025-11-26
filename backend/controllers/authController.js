@@ -6,6 +6,7 @@ const pool = require('../config/database');
 exports.register = async (req, res) => {
   try {
     const { fullName, email, password, confirmPassword } = req.body;
+    console.log('Registro iniciado para:', email);
 
     // Validar que todos los campos existan
     if (!fullName || !email || !password || !confirmPassword) {
@@ -41,14 +42,16 @@ exports.register = async (req, res) => {
       );
 
       if (users.length > 0) {
+        console.log('Email ya existe:', email);
         return res.status(400).json({
           success: false,
-          message: 'El email ya está en uso'
+          message: 'El email ya está registrado'
         });
       }
 
       // Hashear la contraseña
       const hashedPassword = await bcrypt.hash(password, 10);
+      console.log('Contraseña hasheada');
 
       // Insertar usuario en la BD
       await connection.query(
@@ -56,6 +59,7 @@ exports.register = async (req, res) => {
         [fullName, email, hashedPassword]
       );
 
+      console.log('Usuario registrado exitosamente:', email);
       return res.status(201).json({
         success: true,
         message: 'Usuario registrado exitosamente'
@@ -67,7 +71,7 @@ exports.register = async (req, res) => {
     console.error('Error en registro:', error);
     res.status(500).json({
       success: false,
-      message: 'Error en el servidor'
+      message: 'Error en el servidor: ' + error.message
     });
   }
 };
@@ -95,6 +99,7 @@ exports.login = async (req, res) => {
       );
 
       if (users.length === 0) {
+        console.log('Usuario no encontrado:', email);
         return res.status(401).json({
           success: false,
           message: 'Email o contraseña incorrectos'
@@ -102,11 +107,14 @@ exports.login = async (req, res) => {
       }
 
       const user = users[0];
+      console.log('Usuario encontrado:', user.email);
 
       // Comparar contraseña
       const isPasswordValid = await bcrypt.compare(password, user.password);
+      console.log('Contraseña válida:', isPasswordValid);
 
       if (!isPasswordValid) {
+        console.log('Contraseña incorrecta para:', email);
         return res.status(401).json({
           success: false,
           message: 'Email o contraseña incorrectos'
@@ -120,6 +128,7 @@ exports.login = async (req, res) => {
         { expiresIn: process.env.JWT_EXPIRES_IN }
       );
 
+      console.log('Login exitoso para:', email);
       return res.status(200).json({
         success: true,
         message: 'Login exitoso',
