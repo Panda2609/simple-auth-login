@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { Auth } from '../../services/auth';
 
 @Component({
   selector: 'app-register',
@@ -12,8 +13,15 @@ import { Router } from '@angular/router';
 export class Register {
   registerForm: FormGroup;
   submitted = false;
+  loading = false;
+  errorMessage = '';
+  successMessage = '';
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private authService: Auth
+  ) {
     this.registerForm = this.fb.group({
       fullName: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
@@ -34,10 +42,35 @@ export class Register {
 
   onSubmit() {
     this.submitted = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
     if (this.registerForm.invalid) return;
-    
-    console.log('Register:', this.registerForm.value);
-    // TODO: Llamar al servicio de autenticación
+
+    this.loading = true;
+    this.registerForm.disable();
+    const { fullName, email, password, confirmPassword } = this.registerForm.value;
+
+    this.authService.register(fullName, email, password, confirmPassword).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.successMessage = '¡Registro exitoso! Redirigiendo al login...';
+          setTimeout(() => {
+            this.router.navigate(['/login']);
+          }, 2000);
+        } else {
+          this.errorMessage = response.message;
+          this.loading = false;
+          this.registerForm.enable();
+        }
+      },
+      error: (error) => {
+        console.error('Error en registro:', error);
+        this.errorMessage = error.error?.message || 'Error en el servidor';
+        this.loading = false;
+        this.registerForm.enable();
+      }
+    });
   }
 
   goToLogin() {

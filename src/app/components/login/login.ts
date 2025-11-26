@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { Auth } from '../../services/auth';
 
 @Component({
   selector: 'app-login',
@@ -12,8 +13,14 @@ import { Router } from '@angular/router';
 export class Login {
   loginForm: FormGroup;
   submitted = false;
+  loading = false;
+  errorMessage = '';
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private authService: Auth
+  ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]]
@@ -26,10 +33,32 @@ export class Login {
 
   onSubmit() {
     this.submitted = true;
+    this.errorMessage = '';
+
     if (this.loginForm.invalid) return;
-    
-    console.log('Login:', this.loginForm.value);
-    // TODO: Llamar al servicio de autenticación
+
+    this.loading = true;
+    this.loginForm.disable();
+    const { email, password } = this.loginForm.value;
+
+    this.authService.login(email, password).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.authService.saveToken(response.token!);
+          this.router.navigate(['/home']);
+        } else {
+          this.errorMessage = response.message;
+          this.loading = false;
+          this.loginForm.enable();
+        }
+      },
+      error: (error) => {
+        console.error('Error en login:', error);
+        this.errorMessage = error.error?.message || 'Error en el servidor';
+        this.loading = false;
+        this.loginForm.enable();
+      }
+    });
   }
 
   goToRegister() {
