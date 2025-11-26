@@ -37,19 +37,19 @@
       <!-- Nombre -->
       <div class="bg-gray-50 p-4 rounded-lg border-2 border-green-200">
         <p class="text-sm font-semibold text-green-800 mb-1">Nombre Completo</p>
-        <p class="text-gray-800 font-mono text-lg">{{ user.fullName }}</p>
+        <p class="text-gray-800 font-mono text-lg">{{ user?.fullName }}</p>
       </div>
 
       <!-- Email -->
       <div class="bg-gray-50 p-4 rounded-lg border-2 border-green-200">
         <p class="text-sm font-semibold text-green-800 mb-1">Correo Electrónico</p>
-        <p class="text-gray-800 font-mono text-lg">{{ user.email }}</p>
+        <p class="text-gray-800 font-mono text-lg">{{ user?.email }}</p>
       </div>
 
       <!-- Fecha de Registro -->
       <div class="bg-gray-50 p-4 rounded-lg border-2 border-green-200">
         <p class="text-sm font-semibold text-green-800 mb-1">Fecha de Registro</p>
-        <p class="text-gray-800 font-mono text-lg">{{ user.registeredDate }}</p>
+        <p class="text-gray-800 font-mono text-lg">{{ user?.registeredDate | date:'yyyy-MM-dd' }}</p>
       </div>
     </div>
 
@@ -57,7 +57,7 @@
     <div class="space-y-2 mb-8">
       <div class="flex items-center gap-2 mb-4">
         <i class="fas fa-shield text-green-700 text-xl"></i>
-        <h2 class="text-xl font-bold text-green-700">Token de Autenticación</h2>
+        <h2 class="text-xl font-bold text-green-700">Token de Autenticación Hasheado</h2>
       </div>
       
       <div class="bg-gray-900 p-4 rounded-lg border-2 border-green-500 flex items-center justify-between gap-4">

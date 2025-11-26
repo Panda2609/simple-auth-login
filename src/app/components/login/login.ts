@@ -45,6 +45,7 @@ export class Login {
       next: (response) => {
         if (response.success) {
           this.authService.saveToken(response.token!);
+          this.authService.saveUser(response.user!);
           this.router.navigate(['/home']);
         } else {
           this.errorMessage = response.message;

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { Auth, User } from '../../services/auth';
 
 @Component({
   selector: 'app-home',
@@ -9,23 +10,27 @@ import { Router } from '@angular/router';
   styleUrl: './home.css',
 })
 export class Home implements OnInit {
-  user = {
-    fullName: 'Juan Pérez',
-    email: 'juan@example.com',
-    registeredDate: new Date().toLocaleDateString('es-ES')
-  };
-  
-  token: string = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+  user: User | null = null;
+  token: string = '';
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: Auth
+  ) {}
 
   ngOnInit() {
-    // Aquí irían los datos del usuario logueado desde el servicio
-    // this.user = this.authService.getCurrentUser();
+    // Obtener datos del usuario del localStorage
+    this.user = this.authService.getUser();
+    this.token = this.authService.getToken() || '';
+
+    // Si no hay usuario, redirigir a login
+    if (!this.user) {
+      this.router.navigate(['/login']);
+    }
   }
 
   logout() {
-    // Limpiar datos y redirigir a login
+    this.authService.logout();
     this.router.navigate(['/login']);
   }
 

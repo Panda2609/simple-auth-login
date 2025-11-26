@@ -14,16 +14,18 @@ interface RegisterRequest {
   confirmPassword: string;
 }
 
+export interface User {
+  id: number;
+  fullName: string;
+  email: string;
+  registeredDate: string;
+}
+
 interface AuthResponse {
   success: boolean;
   message: string;
   token?: string;
-  user?: {
-    id: number;
-    fullName: string;
-    email: string;
-    registeredDate: string;
-  };
+  user?: User;
 }
 
 @Injectable({
@@ -48,8 +50,17 @@ export class Auth {
     localStorage.setItem('token', token);
   }
 
+  saveUser(user: User): void {
+    localStorage.setItem('user', JSON.stringify(user));
+  }
+
   getToken(): string | null {
     return localStorage.getItem('token');
+  }
+
+  getUser(): User | null {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
   }
 
   isAuthenticated(): boolean {
@@ -58,5 +69,6 @@ export class Auth {
 
   logout(): void {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
   }
 }
