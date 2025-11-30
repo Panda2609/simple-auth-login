@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
@@ -21,6 +22,13 @@ export interface User {
   registeredDate: string;
 }
 
+export interface TokenInfo {
+  id: number;
+  email: string;
+  iat: number;
+  exp: number;
+}
+
 interface AuthResponse {
   success: boolean;
   message: string;
@@ -33,8 +41,14 @@ interface AuthResponse {
 })
 export class Auth {
   private apiUrl = 'http://localhost:3000/api/auth';
+  private isBrowser: boolean;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    @Inject(PLATFORM_ID) platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
 
   login(email: string, password: string): Observable<AuthResponse> {
     const body: LoginRequest = { email, password };
@@ -47,20 +61,30 @@ export class Auth {
   }
 
   saveToken(token: string): void {
-    localStorage.setItem('token', token);
+    if (this.isBrowser) {
+      localStorage.setItem('token', token);
+    }
   }
 
   saveUser(user: User): void {
-    localStorage.setItem('user', JSON.stringify(user));
+    if (this.isBrowser) {
+      localStorage.setItem('user', JSON.stringify(user));
+    }
   }
 
   getToken(): string | null {
-    return localStorage.getItem('token');
+    if (this.isBrowser) {
+      return localStorage.getItem('token');
+    }
+    return null;
   }
 
   getUser(): User | null {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+    if (this.isBrowser) {
+      const user = localStorage.getItem('user');
+      return user ? JSON.parse(user) : null;
+    }
+    return null;
   }
 
   isAuthenticated(): boolean {
@@ -68,7 +92,50 @@ export class Auth {
   }
 
   logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    if (this.isBrowser) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
+  }
+
+  // Decodificar JWT sin librería externa
+  private decodeToken(token: string): TokenInfo | null {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      return JSON.parse(jsonPayload) as TokenInfo;
+    } catch (error) {
+      console.error('Error decodificando token:', error);
+      return null;
+    }
+  }
+
+  // Obtener información del token
+  getTokenInfo(): TokenInfo | null {
+    const token = this.getToken();
+    return token ? this.decodeToken(token) : null;
+  }
+
+  // Obtener tiempo de expiración del token en minutos
+  getTokenExpirationTime(): number | null {
+    const tokenInfo = this.getTokenInfo();
+    if (!tokenInfo) return null;
+
+    const now = Math.floor(Date.now() / 1000);
+    const expiresIn = tokenInfo.exp - now;
+
+    return expiresIn > 0 ? Math.floor(expiresIn / 60) : 0;
+  }
+
+  // Verificar si el token está próximo a expirar
+  isTokenExpiringSoon(minutesThreshold: number = 5): boolean {
+    const expirationTime = this.getTokenExpirationTime();
+    return expirationTime !== null && expirationTime <= minutesThreshold;
   }
 }

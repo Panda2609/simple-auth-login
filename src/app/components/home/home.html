@@ -27,6 +27,38 @@
       </div>
     </div>
 
+    <!-- Tiempo de Sesión (Tarjeta destacada) -->
+    <div [ngClass]="{
+      'bg-yellow-50 border-yellow-300': isSessionExpiringSoon,
+      'bg-blue-50 border-blue-300': !isSessionExpiringSoon
+    }" class="p-6 rounded-lg border-2 mb-8">
+      <div class="flex items-center gap-3 mb-3">
+        <i [ngClass]="{
+          'fas fa-exclamation-triangle text-yellow-600': isSessionExpiringSoon,
+          'fas fa-clock text-blue-600': !isSessionExpiringSoon
+        }" class="text-2xl"></i>
+        <h2 class="text-lg font-bold" [ngClass]="{
+          'text-yellow-800': isSessionExpiringSoon,
+          'text-blue-800': !isSessionExpiringSoon
+        }">Tiempo de Sesión Restante</h2>
+      </div>
+      <p class="text-3xl font-bold font-mono" [ngClass]="{
+        'text-yellow-700': isSessionExpiringSoon,
+        'text-blue-700': !isSessionExpiringSoon
+      }">{{ expirationTimeInMinutes | formatTime }}</p>
+      <p class="text-sm mt-2" [ngClass]="{
+        'text-yellow-700': isSessionExpiringSoon,
+        'text-blue-700': !isSessionExpiringSoon
+      }">
+        <span *ngIf="isSessionExpiringSoon">
+          <i class="fas fa-warning"></i> Tu sesión expirará pronto. Por favor, guarda tu trabajo.
+        </span>
+        <span *ngIf="!isSessionExpiringSoon">
+          Tu sesión es válida. Serás desconectado automáticamente cuando expire.
+        </span>
+      </p>
+    </div>
+
     <!-- Credenciales -->
     <div class="space-y-4 mb-8">
       <div class="flex items-center gap-2 mb-4">
@@ -77,7 +109,7 @@
       <div class="flex items-start gap-3">
         <i class="fas fa-info-circle text-blue-600 text-xl mt-0.5"></i>
         <p class="text-blue-800 text-sm">
-          Este token es necesario para autenticarte en las peticiones al servidor
+          Este token es necesario para autenticarte en las peticiones al servidor. El tiempo mostrado se actualiza en tiempo real.
         </p>
       </div>
     </div>
