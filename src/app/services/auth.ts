@@ -40,7 +40,7 @@ interface AuthResponse {
   providedIn: 'root',
 })
 export class Auth {
-  private apiUrl = 'http://localhost:8080/api/auth';
+  private apiUrl = 'https://simple-auth-backend-287409988896.us-central1.run.app/api/auth';
   private isBrowser: boolean;
 
   constructor(
