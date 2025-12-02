@@ -45,9 +45,10 @@ const generalLimiter = rateLimit({
 // Rate Limiting - Más estricto para autenticación (previene bruteforce)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 5, // 5 intentos por IP en 15 minutos
+  max: 25, // 25 intentos por IP en 15 minutos
   message: 'Demasiados intentos de login/registro, intenta de nuevo en 15 minutos',
   skipSuccessfulRequests: false, // Contar incluso solicitudes exitosas
+  skip: (req) => req.method === 'OPTIONS', // Ignorar requests OPTIONS (CORS preflight)
   standardHeaders: true,
   legacyHeaders: false
 });
