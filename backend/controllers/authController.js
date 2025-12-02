@@ -2,6 +2,19 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../config/database');
 
+// Validar formato de email
+const validateEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+// Validar fortaleza de contraseña
+const validatePassword = (password) => {
+  // Al menos 8 caracteres, 1 mayúscula, 1 minúscula, 1 número, 1 carácter especial
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  return passwordRegex.test(password);
+};
+
 // REGISTER
 exports.register = async (req, res) => {
   try {
@@ -16,6 +29,22 @@ exports.register = async (req, res) => {
       });
     }
 
+    // Validar formato de email
+    if (!validateEmail(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Formato de email inválido'
+      });
+    }
+
+    // Validar que el fullName tenga al menos 3 caracteres
+    if (fullName.trim().length < 3) {
+      return res.status(400).json({
+        success: false,
+        message: 'El nombre debe tener al menos 3 caracteres'
+      });
+    }
+
     // Validar que las contraseñas coincidan
     if (password !== confirmPassword) {
       return res.status(400).json({
@@ -24,11 +53,11 @@ exports.register = async (req, res) => {
       });
     }
 
-    // Validar que la contraseña tenga al menos 6 caracteres
-    if (password.length < 6) {
+    // Validar que la contraseña sea lo suficientemente fuerte
+    if (!validatePassword(password)) {
       return res.status(400).json({
         success: false,
-        message: 'La contraseña debe tener al menos 6 caracteres'
+        message: 'La contraseña debe tener: 8+ caracteres, 1 mayúscula, 1 minúscula, 1 número, 1 carácter especial (@$!%*?&)'
       });
     }
 
@@ -88,6 +117,14 @@ exports.login = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Email y contraseña son requeridos'
+      });
+    }
+
+    // Validar formato de email
+    if (!validateEmail(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Formato de email inválido'
       });
     }
 
