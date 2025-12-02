@@ -32,16 +32,14 @@ exports.register = async (req, res) => {
       });
     }
 
-    const connection = await pool.getConnection();
-
     try {
       // Verificar si el email ya existe
-      const [users] = await connection.query(
-        'SELECT email FROM users WHERE email = ?',
+      const userExists = await pool.query(
+        'SELECT email FROM users WHERE email = $1',
         [email]
       );
 
-      if (users.length > 0) {
+      if (userExists.rows.length > 0) {
         console.log('Email ya existe:', email);
         return res.status(400).json({
           success: false,
@@ -54,8 +52,8 @@ exports.register = async (req, res) => {
       console.log('Contraseña hasheada');
 
       // Insertar usuario en la BD
-      await connection.query(
-        'INSERT INTO users (fullName, email, password, registeredDate) VALUES (?, ?, ?, NOW())',
+      await pool.query(
+        'INSERT INTO users (fullname, email, password, registereddate) VALUES ($1, $2, $3, NOW())',
         [fullName, email, hashedPassword]
       );
 
@@ -64,8 +62,12 @@ exports.register = async (req, res) => {
         success: true,
         message: 'Usuario registrado exitosamente'
       });
-    } finally {
-      connection.release();
+    } catch (error) {
+      console.error('Error en registro:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error en el servidor: ' + error.message
+      });
     }
   } catch (error) {
     console.error('Error en registro:', error);
@@ -89,16 +91,14 @@ exports.login = async (req, res) => {
       });
     }
 
-    const connection = await pool.getConnection();
-
     try {
       // Buscar usuario por email
-      const [users] = await connection.query(
-        'SELECT id, fullName, email, password, registeredDate FROM users WHERE email = ?',
+      const result = await pool.query(
+        'SELECT id, fullname, email, password, registereddate FROM users WHERE email = $1',
         [email]
       );
 
-      if (users.length === 0) {
+      if (result.rows.length === 0) {
         console.log('Usuario no encontrado:', email);
         return res.status(401).json({
           success: false,
@@ -106,7 +106,7 @@ exports.login = async (req, res) => {
         });
       }
 
-      const user = users[0];
+      const user = result.rows[0];
       console.log('Usuario encontrado:', user.email);
 
       // Comparar contraseña
@@ -135,13 +135,17 @@ exports.login = async (req, res) => {
         token: token,
         user: {
           id: user.id,
-          fullName: user.fullName,
+          fullName: user.fullname,
           email: user.email,
-          registeredDate: user.registeredDate
+          registeredDate: user.registereddate
         }
       });
-    } finally {
-      connection.release();
+    } catch (error) {
+      console.error('Error en login:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error en el servidor'
+      });
     }
   } catch (error) {
     console.error('Error en login:', error);
