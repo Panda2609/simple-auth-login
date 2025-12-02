@@ -73,21 +73,13 @@ export class Home implements OnInit, OnDestroy {
 
     this.authService.getProfile().subscribe({
       next: (response) => {
-        console.log('=== RESPUESTA COMPLETA ===');
-        console.log('Response:', response);
-        console.log('Response.success:', response.success);
-        console.log('Response.user:', response.user);
-        console.log('=========================');
-        
         if (response && response.success && response.user) {
-          console.log('✓ Datos válidos, asignando usuario');
           this.user = response.user;
           this.authService.saveUser(response.user);
           this.loading = false;
           this.updateSessionTime();
           this.cdr.markForCheck();
         } else {
-          console.error('✗ Respuesta inválida');
           this.errorMessage = response?.message || 'Error desconocido';
           this.loading = false;
           this.cdr.markForCheck();

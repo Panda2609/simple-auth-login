@@ -19,7 +19,6 @@ const validatePassword = (password) => {
 exports.register = async (req, res) => {
   try {
     const { fullName, email, password, confirmPassword } = req.body;
-    console.log('Registro iniciado para:', email);
 
     // Validar que todos los campos existan
     if (!fullName || !email || !password || !confirmPassword) {
@@ -69,7 +68,6 @@ exports.register = async (req, res) => {
       );
 
       if (userExists.rows.length > 0) {
-        console.log('Email ya existe:', email);
         return res.status(400).json({
           success: false,
           message: 'El email ya está registrado'
@@ -78,7 +76,6 @@ exports.register = async (req, res) => {
 
       // Hashear la contraseña
       const hashedPassword = await bcrypt.hash(password, 10);
-      console.log('Contraseña hasheada');
 
       // Insertar usuario en la BD
       await pool.query(
@@ -86,7 +83,6 @@ exports.register = async (req, res) => {
         [fullName, email, hashedPassword]
       );
 
-      console.log('Usuario registrado exitosamente:', email);
       return res.status(201).json({
         success: true,
         message: 'Usuario registrado exitosamente'
@@ -136,7 +132,6 @@ exports.login = async (req, res) => {
       );
 
       if (result.rows.length === 0) {
-        console.log('Usuario no encontrado:', email);
         return res.status(401).json({
           success: false,
           message: 'Email o contraseña incorrectos'
@@ -144,14 +139,11 @@ exports.login = async (req, res) => {
       }
 
       const user = result.rows[0];
-      console.log('Usuario encontrado:', user.email);
 
       // Comparar contraseña
       const isPasswordValid = await bcrypt.compare(password, user.password);
-      console.log('Contraseña válida:', isPasswordValid);
 
       if (!isPasswordValid) {
-        console.log('Contraseña incorrecta para:', email);
         return res.status(401).json({
           success: false,
           message: 'Email o contraseña incorrectos'
@@ -165,7 +157,6 @@ exports.login = async (req, res) => {
         { expiresIn: process.env.JWT_EXPIRES_IN }
       );
 
-      console.log('Login exitoso para:', email);
       return res.status(200).json({
         success: true,
         message: 'Login exitoso',
@@ -212,7 +203,6 @@ exports.profile = async (req, res) => {
     }
 
     const user = connection.rows[0];
-    console.log('Perfil obtenido para usuario:', userId);
 
     return res.status(200).json({
       success: true,
@@ -238,7 +228,6 @@ exports.logout = (req, res) => {
   try {
     // El logout se maneja principalmente en el frontend (eliminar token del localStorage)
     // Este endpoint solo es para registrar el logout en logs si lo necesitas
-    console.log('Logout para usuario:', req.user.email);
 
     return res.status(200).json({
       success: true,
