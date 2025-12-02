@@ -6,6 +6,9 @@ const authRoutes = require('./routes/auth');
 
 const app = express();
 
+// Confiar en proxies (necesario para Cloud Run)
+app.set('trust proxy', 1);
+
 // Middleware
 const corsOptions = {
   origin: function (origin, callback) {
