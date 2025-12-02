@@ -192,3 +192,63 @@ exports.login = async (req, res) => {
     });
   }
 };
+
+// PROFILE - Endpoint protegido para obtener datos del usuario
+exports.profile = async (req, res) => {
+  try {
+    // req.user viene del middleware de autenticación
+    const userId = req.user.id;
+
+    const connection = await pool.query(
+      'SELECT id, fullname, email, registereddate FROM users WHERE id = $1',
+      [userId]
+    );
+
+    if (connection.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuario no encontrado'
+      });
+    }
+
+    const user = connection.rows[0];
+    console.log('Perfil obtenido para usuario:', userId);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Datos del usuario obtenidos',
+      user: {
+        id: user.id,
+        fullName: user.fullname,
+        email: user.email,
+        registeredDate: user.registereddate
+      }
+    });
+  } catch (error) {
+    console.error('Error obteniendo perfil:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error en el servidor'
+    });
+  }
+};
+
+// LOGOUT - Endpoint para cerrar sesión (fronted lo maneja, pero es buena práctica)
+exports.logout = (req, res) => {
+  try {
+    // El logout se maneja principalmente en el frontend (eliminar token del localStorage)
+    // Este endpoint solo es para registrar el logout en logs si lo necesitas
+    console.log('Logout para usuario:', req.user.email);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Sesión cerrada exitosamente'
+    });
+  } catch (error) {
+    console.error('Error en logout:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error en el servidor'
+    });
+  }
+};

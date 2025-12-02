@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -17,12 +17,15 @@ export class Home implements OnInit, OnDestroy {
   token: string = '';
   expirationTimeInMinutes: number | null = null;
   isSessionExpiringSoon: boolean = false;
+  loading: boolean = true;
+  errorMessage: string = '';
   private sessionUpdateSubscription: Subscription | null = null;
   private isBrowser: boolean;
 
   constructor(
     private router: Router,
     private authService: Auth,
+    private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -31,26 +34,29 @@ export class Home implements OnInit, OnDestroy {
   ngOnInit() {
     // Solo ejecutar en el navegador
     if (!this.isBrowser) {
+      this.loading = false;
       return;
     }
 
-    // Obtener datos del usuario del localStorage
-    this.user = this.authService.getUser();
-    this.token = this.authService.getToken() || '';
+    // Usar setTimeout para asegurar que se ejecute después de la hidratación
+    setTimeout(() => {
+      // Obtener token del localStorage
+      this.token = this.authService.getToken() || '';
 
-    // Si no hay usuario, redirigir a login
-    if (!this.user) {
-      this.router.navigate(['/login']);
-      return;
-    }
+      // Si no hay token, redirigir a login
+      if (!this.token) {
+        this.router.navigate(['/login']);
+        return;
+      }
 
-    // Actualizar el tiempo de sesión inmediatamente
-    this.updateSessionTime();
+      // Cargar datos del usuario desde el backend
+      this.loadUserProfile();
 
-    // Actualizar el tiempo de sesión cada segundo
-    this.sessionUpdateSubscription = interval(1000).subscribe(() => {
-      this.updateSessionTime();
-    });
+      // Actualizar el tiempo de sesión cada segundo
+      this.sessionUpdateSubscription = interval(1000).subscribe(() => {
+        this.updateSessionTime();
+      });
+    }, 0);
   }
 
   ngOnDestroy() {
@@ -58,6 +64,56 @@ export class Home implements OnInit, OnDestroy {
     if (this.sessionUpdateSubscription) {
       this.sessionUpdateSubscription.unsubscribe();
     }
+  }
+
+  // Cargar perfil del usuario desde el backend
+  loadUserProfile() {
+    this.loading = true;
+    this.errorMessage = '';
+
+    this.authService.getProfile().subscribe({
+      next: (response) => {
+        console.log('=== RESPUESTA COMPLETA ===');
+        console.log('Response:', response);
+        console.log('Response.success:', response.success);
+        console.log('Response.user:', response.user);
+        console.log('=========================');
+        
+        if (response && response.success && response.user) {
+          console.log('✓ Datos válidos, asignando usuario');
+          this.user = response.user;
+          this.authService.saveUser(response.user);
+          this.loading = false;
+          this.updateSessionTime();
+          this.cdr.markForCheck();
+        } else {
+          console.error('✗ Respuesta inválida');
+          this.errorMessage = response?.message || 'Error desconocido';
+          this.loading = false;
+          this.cdr.markForCheck();
+        }
+      },
+      error: (error) => {
+        console.error('Error cargando perfil:', error);
+        this.loading = false;
+        
+        if (error.status === 401) {
+          this.errorMessage = 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.';
+          this.cdr.markForCheck();
+          setTimeout(() => {
+            this.authService.logout();
+            this.router.navigate(['/login']);
+          }, 2000);
+        } else {
+          this.errorMessage = error.error?.message || 'Error cargando el perfil';
+          const userFromStorage = this.authService.getUser();
+          if (userFromStorage) {
+            this.user = userFromStorage;
+          }
+          this.cdr.markForCheck();
+        }
+      }
+    });
   }
 
   updateSessionTime() {
@@ -71,6 +127,21 @@ export class Home implements OnInit, OnDestroy {
   }
 
   logout() {
+    // Llamar al endpoint de logout del backend (opcional, pero es buena práctica)
+    this.authService.logoutBackend().subscribe({
+      next: () => {
+        console.log('Logout exitoso en backend');
+        this.performLogout();
+      },
+      error: (error) => {
+        console.error('Error en logout del backend:', error);
+        // De todas formas, hacer logout en el frontend
+        this.performLogout();
+      }
+    });
+  }
+
+  performLogout() {
     this.authService.logout();
     this.router.navigate(['/login']);
   }

@@ -98,6 +98,32 @@ export class Auth {
     }
   }
 
+  // Obtener perfil del usuario desde el backend (endpoint protegido)
+  getProfile(): Observable<any> {
+    const token = this.getToken();
+    if (!token) {
+      throw new Error('No hay token disponible');
+    }
+    return this.http.get<any>(`${this.apiUrl}/profile`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+  }
+
+  // Logout en el backend (endpoint protegido)
+  logoutBackend(): Observable<any> {
+    const token = this.getToken();
+    if (!token) {
+      throw new Error('No hay token disponible');
+    }
+    return this.http.post<any>(`${this.apiUrl}/logout`, {}, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+  }
+
   // Decodificar JWT sin librería externa
   private decodeToken(token: string): TokenInfo | null {
     try {
