@@ -8,7 +8,22 @@ const app = express();
 
 // Middleware
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:4200',
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:4200',
+      'http://localhost:3000',
+      'https://panda2609.github.io',
+      'https://panda2609.github.io/simple-auth-login',
+      process.env.FRONTEND_URL
+    ];
+    
+    // Permitir sin origin (para requests desde mobile apps, curl, etc)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200
 };
